@@ -6,10 +6,13 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -44,6 +47,9 @@ fun MeteoLocalApp() {
     var localidad by remember {
         mutableStateOf("")
     }
+    var mensaje by remember {
+        mutableStateOf("Introduce una localidad")
+    }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -72,21 +78,42 @@ fun MeteoLocalApp() {
             label = {
                 Text("Localidad")
             },
-            singleLine = true
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
         )
         Spacer(
             modifier = Modifier.height(16.dp)
         )
-        Button (
-            onClick = {}
-        ) {
-            Text("Consultar")
+        Row{
+            Button (
+                onClick = {
+                    if (localidad.isBlank()) {
+                        mensaje = "Introduce una localidad"
+                    } else {
+                        mensaje = "Consulta preparada: $localidad"
+                    }
+                }
+            ) {
+                Text("Consultar")
+            }
+            Spacer(
+                modifier = Modifier.width(12.dp)
+            )
+            Button(
+                onClick = {
+                    localidad = ""
+                    mensaje = "Introduce una localidad"
+                }
+            ) {
+                Text("Limpiar")
+            }
         }
+
         Spacer(
             modifier = Modifier.height(24.dp)
         )
         Text (
-            text = "Aquí aparecerá la información meteorológica"
+            text = mensaje
         )
 
     }
