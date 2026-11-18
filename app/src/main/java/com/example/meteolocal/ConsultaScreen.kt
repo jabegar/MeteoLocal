@@ -15,6 +15,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
@@ -29,6 +30,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.meteolocal.network.ResultadoMeteo
 
 @Composable
 fun ConsultaScreen(
@@ -39,9 +41,9 @@ fun ConsultaScreen(
     onConsultar: () -> Unit,
     onSolicitarLimpiar: () -> Unit,
     onUsarUbicacion: () -> Unit,
-    resultadoRed: String,
-    onProbarConexion: () -> Unit
-
+    cargando: Boolean,
+    error: String?,
+    resultado: ResultadoMeteo?
 ) {
     // Estados locales del menú "Más"
     var menuAbierto by remember {
@@ -121,7 +123,10 @@ fun ConsultaScreen(
         )
 
         Row {
-            Button(onClick = onConsultar) {
+            Button(
+                onClick = onConsultar,
+                enabled = !cargando
+            ) {
                 Text("Consultar")
             }
             Spacer(
@@ -146,21 +151,33 @@ fun ConsultaScreen(
             text = mensajeUbicacion
         )
 
-        Spacer(modifier = Modifier.height(12.dp))
-        Button(onClick = onProbarConexion) {
-            Text("Probar conexión (Sevilla)")
+        Spacer(modifier = Modifier.height(24.dp))
+        val datos = resultado
+        when {
+            cargando -> {
+                CircularProgressIndicator()
+                Spacer(Modifier.height(8.dp))
+                Text("Consultando...")
+            }
+            error != null -> {
+                Text(text = error.orEmpty())
+            }
+            datos != null -> {
+                Text(
+                    text = datos.localidad +
+                            (datos.pais?.let { ", $it" } ?: ""),
+                    style = MaterialTheme.typography.titleLarge
+                )
+                Text("Temperatura: ${datos.temperatura} °C")
+                Text("Sensación: ${datos.sensacion} °C")
+                Text("Humedad: ${datos.humedad} %")
+                Text("Viento: ${datos.viento} km/h")
+                Text("Código meteorológico: ${datos.codigo}")
+            }
+            else -> {
+                Text("Introduce una localidad y pulsa Consultar.")
+            }
         }
-        Spacer(modifier = Modifier.height(12.dp))
-        Text(text = resultadoRed)
-
-        Spacer(
-            modifier = Modifier.height(24.dp)
-        )
-
-        // Texto reservado para el resultado
-        Text(
-            text = mensaje
-        )
     }
 
     // Diálogo "Acerca de"

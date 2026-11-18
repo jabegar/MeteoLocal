@@ -8,6 +8,9 @@ interface MeteoApi {
     suspend fun obtenerTiempoActual(
         @Query("latitude") latitud: Double,
         @Query("longitude") longitud: Double,
-        @Query("current") variables: String = "temperature_2m"
-    ): ModelosMeteo.RespuestaMeteo
+        @Query("current") variables: String =
+            "temperature_2m,apparent_temperature," +
+                    "relative_humidity_2m,weather_code," +
+                    "wind_speed_10m"
+    ): RespuestaMeteo
 }
