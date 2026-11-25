@@ -16,6 +16,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -71,6 +72,15 @@ fun MeteoLocalApp() {
     val scope = rememberCoroutineScope()
 
     val context =   LocalContext.current
+
+    val preferencias = remember {
+        PreferenciasMeteo(context)
+    }
+    val unidadTemperatura by
+    preferencias.unidadTemperatura.collectAsState(
+        initial = "C"
+    )
+
 
     val permissionLauncher =
         rememberLauncherForActivityResult(
@@ -208,14 +218,24 @@ fun MeteoLocalApp() {
                     onUsarUbicacion = onUsarUbicacion,
                     cargando = cargando,
                     error = error,
-                    resultado = resultado
+                    resultado = resultado,
+                    unidadTemperatura = unidadTemperatura
                 )
             }
             composable("favoritos") {
                 FavoritosScreen()
             }
             composable("configuracion") {
-                ConfiguracionScreen()
+                ConfiguracionScreen(
+                    unidadTemperatura = unidadTemperatura,
+                    onUnidadChange = { nuevaUnidad ->
+                        scope.launch {
+                            preferencias.guardarUnidadTemperatura(
+                                nuevaUnidad
+                            )
+                        }
+                    }
+                )
             }
         }
     }

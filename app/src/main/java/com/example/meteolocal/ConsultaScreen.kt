@@ -43,7 +43,8 @@ fun ConsultaScreen(
     onUsarUbicacion: () -> Unit,
     cargando: Boolean,
     error: String?,
-    resultado: ResultadoMeteo?
+    resultado: ResultadoMeteo?,
+    unidadTemperatura: String
 ) {
     // Estados locales del menú "Más"
     var menuAbierto by remember {
@@ -163,13 +164,36 @@ fun ConsultaScreen(
                 Text(text = error.orEmpty())
             }
             datos != null -> {
+                val simbolo =
+                    if (unidadTemperatura == "F") "°F"
+                    else "°C"
+                val temperaturaMostrada =
+                    convertirTemperatura(
+                        datos.temperatura,
+                        unidadTemperatura
+                    )
+                val sensacionMostrada =
+                    convertirTemperatura(
+                        datos.sensacion,
+                        unidadTemperatura
+                    )
+
                 Text(
                     text = datos.localidad +
                             (datos.pais?.let { ", $it" } ?: ""),
                     style = MaterialTheme.typography.titleLarge
                 )
-                Text("Temperatura: ${datos.temperatura} °C")
-                Text("Sensación: ${datos.sensacion} °C")
+                Text(
+                    text = "Temperatura: %.1f %s".format(
+                        temperaturaMostrada, simbolo
+                    )
+                )
+                Text(
+                    text = "Sensación: %.1f %s".format(
+                        sensacionMostrada, simbolo
+                    )
+                )
+
                 Text("Humedad: ${datos.humedad} %")
                 Text("Viento: ${datos.viento} km/h")
                 Text("Código meteorológico: ${datos.codigo}")
