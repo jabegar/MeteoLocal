@@ -31,6 +31,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.meteolocal.data.local.LocalidadFavorita
+import com.example.meteolocal.data.local.MeteoLocalDatabase
 import com.example.meteolocal.network.OpenMeteoClient
 import com.example.meteolocal.network.ResultadoMeteo
 import kotlinx.coroutines.launch
@@ -71,7 +73,7 @@ fun MeteoLocalApp() {
 
     val scope = rememberCoroutineScope()
 
-    val context =   LocalContext.current
+    val context = LocalContext.current
 
     val preferencias = remember {
         PreferenciasMeteo(context)
@@ -80,14 +82,25 @@ fun MeteoLocalApp() {
     preferencias.unidadTemperatura.collectAsState(
         initial = "C"
     )
+    val database = remember(context) {
+        MeteoLocalDatabase.getDatabase(context)
+    }
+    val localidadDao = remember(database) {
+        database.localidadFavoritaDao()
+    }
 
+    val favoritosFlow = remember(localidadDao) {
+        localidadDao.obtenerTodas()
+    }
+    val favoritos by favoritosFlow.collectAsState(
+        initial = emptyList()
+    )
 
     val permissionLauncher =
         rememberLauncherForActivityResult(
             contract =
                 ActivityResultContracts.RequestPermission()
-        ) {
-            concedido: Boolean ->
+        ) { concedido: Boolean ->
             if (concedido) {
                 mensajeUbicacion =
                     "Permiso de ubicación concedido."
@@ -142,7 +155,9 @@ fun MeteoLocalApp() {
                             sensacion = meteo.current.apparent_temperature,
                             humedad = meteo.current.relative_humidity_2m,
                             codigo = meteo.current.weather_code,
-                            viento = meteo.current.wind_speed_10m
+                            viento = meteo.current.wind_speed_10m,
+                            latitud = lugar.latitude,
+                            longitud = lugar.longitude
                         )
                     }
                 } catch (e: java.io.IOException) {
@@ -154,6 +169,21 @@ fun MeteoLocalApp() {
                 } finally {
                     cargando = false
                 }
+            }
+        }
+    }
+
+    val onAgregarFavorito: () -> Unit = {
+        val actual = resultado
+        if (actual != null) {
+            scope.launch {
+                localidadDao.insertar(
+                    LocalidadFavorita(
+                        nombre = actual.localidad,
+                        latitud = actual.latitud,
+                        longitud = actual.longitud
+                    )
+                )
             }
         }
     }
@@ -219,11 +249,12 @@ fun MeteoLocalApp() {
                     cargando = cargando,
                     error = error,
                     resultado = resultado,
-                    unidadTemperatura = unidadTemperatura
+                    unidadTemperatura = unidadTemperatura,
+                    onAgregarFavorito = onAgregarFavorito
                 )
             }
             composable("favoritos") {
-                FavoritosScreen()
+                FavoritosScreen(favoritos = favoritos)
             }
             composable("configuracion") {
                 ConfiguracionScreen(

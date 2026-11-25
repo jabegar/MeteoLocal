@@ -7,5 +7,7 @@ data class ResultadoMeteo(
     val sensacion: Double,
     val humedad: Int,
     val codigo: Int,
-    val viento: Double
+    val viento: Double,
+    val latitud: Double,
+    val longitud: Double
 )

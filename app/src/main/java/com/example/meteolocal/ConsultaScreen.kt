@@ -44,7 +44,8 @@ fun ConsultaScreen(
     cargando: Boolean,
     error: String?,
     resultado: ResultadoMeteo?,
-    unidadTemperatura: String
+    unidadTemperatura: String,
+    onAgregarFavorito: () -> Unit
 ) {
     // Estados locales del menú "Más"
     var menuAbierto by remember {
@@ -197,6 +198,11 @@ fun ConsultaScreen(
                 Text("Humedad: ${datos.humedad} %")
                 Text("Viento: ${datos.viento} km/h")
                 Text("Código meteorológico: ${datos.codigo}")
+
+                Spacer(Modifier.height(12.dp))
+                Button(onClick = onAgregarFavorito) {
+                    Text("★ Añadir a favoritos")
+                }
             }
             else -> {
                 Text("Introduce una localidad y pulsa Consultar.")
